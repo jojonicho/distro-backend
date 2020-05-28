@@ -6,12 +6,12 @@ import {
   ObjectType,
   Field,
   Ctx,
-  UseMiddleware,
+  // UseMiddleware,
   Int,
 } from "type-graphql";
 import { hash, compare } from "bcryptjs";
 import { createAccessToken, createRefreshToken } from "../utils/auth";
-import { isAuth } from "../middleware/isAuth";
+// import { isAuth } from "../middleware/isAuth";
 import { getConnection } from "typeorm";
 import { MyContext } from "./types/context";
 import { User } from "../entity/User";
@@ -19,11 +19,15 @@ import { RegisterInput } from "../entity/types/RegisterInput";
 import { sendEmail } from "../utils/sendEmail";
 import { createConfirmationUrl } from "../utils/createConfirmationUrl";
 import { redis } from "../redis";
+import { sendRefreshToken } from "../utils/sendRefreshToken";
+import { verify } from "jsonwebtoken";
 
 @ObjectType()
 class LoginResponse {
   @Field()
   accessToken: string;
+  @Field()
+  user: User;
 }
 
 @Resolver()
@@ -33,11 +37,27 @@ export class UserResolver {
     return "hello warudo!";
   }
 
-  @Query(() => String)
-  @UseMiddleware(isAuth)
-  me(@Ctx() { payload }: MyContext) {
-    // console.log(payload);
-    return `User with id ${payload!.userId}`;
+  // simpler but has error
+  // @Query(() => User)
+  // @UseMiddleware(isAuth)
+  // me(@Ctx() { payload }: MyContext) {
+  //   return User.findOne(payload!.userId);
+  // }
+
+  @Query(() => User, { nullable: true })
+  me(@Ctx() { req }: MyContext) {
+    const auth = req.headers["authorization"];
+    if (!auth) return null;
+
+    try {
+      // console.log(auth);
+      const token = auth.split(" ")[1];
+      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+      return User.findOne(payload!.userId);
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 
   @Query(() => [User])
@@ -51,7 +71,7 @@ export class UserResolver {
     // @Arg("email") email: string,
     // @Arg("username") username: string,
     // @Arg("password") password: string
-    @Arg("data") { email, username, password }: RegisterInput
+    @Arg("input") { email, username, password }: RegisterInput
   ): Promise<boolean> {
     const hashedPassword = await hash(password, 12);
     try {
@@ -69,10 +89,7 @@ export class UserResolver {
   }
 
   @Mutation(() => Boolean)
-  async confirmEmail(
-    @Arg("token") token: string
-    // @Ctx() ctx: MyContext
-  ): Promise<boolean> {
+  async confirmEmail(@Arg("token") token: string): Promise<boolean> {
     const userId = await redis.get(token);
     if (!userId) {
       return false;
@@ -115,6 +132,13 @@ export class UserResolver {
     });
     return {
       accessToken: createAccessToken(user),
+      user: user,
     };
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { res }: MyContext): Promise<Boolean> {
+    sendRefreshToken(res, "");
+    return true;
   }
 }

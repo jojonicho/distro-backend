@@ -80,6 +80,8 @@ import { redis } from "./redis";
   apolloServer.applyMiddleware({ app, cors: false });
 
   app.listen(4000, () => {
-    console.log("express journey started on port 4000! Keep going jon!");
+    console.log(
+      "express journey started on http://localhost:4000/graphql/ Keep going jon!"
+    );
   });
 })();
