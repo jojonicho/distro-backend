@@ -2,20 +2,41 @@ import "reflect-metadata";
 import { createConnection } from "typeorm";
 import express from "express";
 import cors from "cors";
+// import { ApolloServer, PubSub } from "apollo-server-express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
+// import { buildSchema, PubSub } from "type-graphql";
+// import { PubSub } from "apollo-server-express";
 import { UserResolver } from "./resolver/UserResolver";
 import { verify } from "jsonwebtoken";
 import { User } from "./entity/User";
 import { createRefreshToken, createAccessToken } from "./utils/auth";
 import { sendRefreshToken } from "./utils/sendRefreshToken";
 import cookieParser from "cookie-parser";
+import Redis from "ioredis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { redis } from "./redis";
 import { MessageResolver } from "./resolver/MessageResolver";
+import { createServer } from "http";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+
+const REDIS_HOST = "192.168.0.103"; // replace with own IP
+const REDIS_PORT = 6379;
 
 (async () => {
+  const PORT = 4000;
+  const options: Redis.RedisOptions = {
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+    retryStrategy: (times) => Math.max(times * 100, 3000),
+  };
+
+  const pubSub = new RedisPubSub({
+    publisher: new Redis(options),
+    subscriber: new Redis(options),
+  });
+
   const app = express();
   const RedisStore = connectRedis(session);
   app.use(
@@ -71,22 +92,38 @@ import { MessageResolver } from "./resolver/MessageResolver";
 
   await createConnection();
 
-  const apolloServer = new ApolloServer({
+  // const pubSub = new PubSub();
+  // const pubSub = new RedisPubSub();
+
+  const server = new ApolloServer({
     schema: await buildSchema({
       resolvers: [UserResolver, MessageResolver],
       dateScalarMode: "isoDate", // "timestamp" or "isoDate"
+      validate: false,
+      pubSub,
     }),
     subscriptions: {
       path: "/chat",
+      onConnect: () => {
+        console.log("yay");
+      },
     },
-    context: ({ req, res }) => ({ req, res }),
+    context: async ({ req, res }) => ({ req, res, pubSub }),
   });
 
-  apolloServer.applyMiddleware({ app, cors: false });
-
-  app.listen(4000, () => {
+  server.applyMiddleware({ app, cors: false });
+  const httpServer = createServer(app);
+  httpServer.listen(PORT, () => {
     console.log(
-      "express journey started on http://localhost:4000/graphql/ Keep going jon!"
+      `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
+    );
+    console.log(
+      `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
     );
   });
+  // app.listen(4000, () => {
+  //   console.log(
+  //     "express journey started on http://localhost:4000/graphql/ Keep going jon!"
+  //   );
+  // });
 })();

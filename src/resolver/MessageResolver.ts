@@ -6,19 +6,28 @@ import {
   UseMiddleware,
   Mutation,
   Arg,
+  Subscription,
+  Root,
 } from "type-graphql";
 import { Message } from "../entity/Message";
 import { MyContext } from "./types/context";
 import { isAuth } from "../middleware/isAuth";
 import { User } from "../entity/User";
 import { MessageInput } from "../entity/types/Input";
+// import { subscribe } from "graphql";
 
 Resolver();
 export class MessageResolver {
-  // @Subscription()
-  // newMessage(): Message {
+  @Subscription(() => Message, {
+    topics: "MESSAGES",
+    // subscribe: () => pubsub.asyncIterator('MESSAGES'),
+    // subscribe: pubsub.asyncIterator("E")
+  })
+  newMessage(@Root() message: Message): Message {
+    // subscribe
+    return message;
+  }
 
-  // }
   @Query(() => [Message])
   messages(@Ctx() { payload }: MyContext) {
     console.log(payload);
@@ -36,7 +45,8 @@ export class MessageResolver {
 
   @Mutation(() => Boolean)
   async sendMessage(
-    @Arg("input") { username, content }: MessageInput
+    @Arg("input") { username, content }: MessageInput,
+    @Ctx() { pubsub }: MyContext
   ): Promise<Boolean> {
     const date = new Date().toISOString();
     console.log(date);
@@ -47,6 +57,7 @@ export class MessageResolver {
         date,
       });
       await message.save();
+      await pubsub.publish("MESSAGES", message);
     } catch (e) {
       console.log(e);
     }
