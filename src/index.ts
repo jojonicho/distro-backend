@@ -13,6 +13,7 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import { redis } from "./redis";
+import { MessageResolver } from "./resolver/MessageResolver";
 
 (async () => {
   const app = express();
@@ -72,8 +73,12 @@ import { redis } from "./redis";
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, MessageResolver],
+      dateScalarMode: "isoDate", // "timestamp" or "isoDate"
     }),
+    subscriptions: {
+      path: "/chat",
+    },
     context: ({ req, res }) => ({ req, res }),
   });
 

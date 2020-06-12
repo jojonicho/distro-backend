@@ -15,7 +15,7 @@ import { createAccessToken, createRefreshToken } from "../utils/auth";
 import { getConnection } from "typeorm";
 import { MyContext } from "./types/context";
 import { User } from "../entity/User";
-import { RegisterInput } from "../entity/types/RegisterInput";
+import { RegisterInput } from "../entity/types/Input";
 import { sendEmail } from "../utils/sendEmail";
 import { createConfirmationUrl } from "../utils/createConfirmationUrl";
 import { redis } from "../redis";

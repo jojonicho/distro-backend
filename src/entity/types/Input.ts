@@ -3,6 +3,17 @@ import { IsEmail, MinLength, MaxLength } from "class-validator";
 import { Field, InputType } from "type-graphql";
 
 @InputType()
+export class MessageInput {
+  @Field()
+  @Column("text", { nullable: false, unique: true })
+  username: string;
+
+  @Field()
+  @Column("text", { nullable: false })
+  content: string;
+}
+
+@InputType()
 export class RegisterInput {
   @Field()
   @Column("text", { nullable: false, unique: true })
