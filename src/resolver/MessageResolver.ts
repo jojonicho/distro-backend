@@ -8,6 +8,8 @@ import {
   Arg,
   Subscription,
   Root,
+  PubSub,
+  Publisher,
 } from "type-graphql";
 import { Message } from "../entity/Message";
 import { MyContext } from "./types/context";
@@ -18,13 +20,8 @@ import { MessageInput } from "../entity/types/Input";
 
 Resolver();
 export class MessageResolver {
-  @Subscription(() => Message, {
-    topics: "MESSAGES",
-    // subscribe: () => pubsub.asyncIterator('MESSAGES'),
-    // subscribe: pubsub.asyncIterator("E")
-  })
+  @Subscription(() => Message, { topics: "MESSAGES" })
   newMessage(@Root() message: Message): Message {
-    // subscribe
     return message;
   }
 
@@ -46,7 +43,7 @@ export class MessageResolver {
   @Mutation(() => Boolean)
   async sendMessage(
     @Arg("input") { username, content }: MessageInput,
-    @Ctx() { pubsub }: MyContext
+    @PubSub("MESSAGES") publish: Publisher<Message>
   ): Promise<Boolean> {
     const date = new Date().toISOString();
     console.log(date);
@@ -57,7 +54,7 @@ export class MessageResolver {
         date,
       });
       await message.save();
-      await pubsub.publish("MESSAGES", message);
+      await publish(message);
     } catch (e) {
       console.log(e);
     }

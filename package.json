@@ -36,6 +36,7 @@
     "nodemailer": "^6.4.8",
     "pg": "^8.2.1",
     "reflect-metadata": "^0.1.10",
+    "subscriptions-transport-ws": "^0.9.16",
     "type-graphql": "^1.0.0-rc.2",
     "typeorm": "0.2.25",
     "uuid": "^8.1.0"
