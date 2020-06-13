@@ -5,8 +5,6 @@ import cors from "cors";
 // import { ApolloServer, PubSub } from "apollo-server-express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-// import { buildSchema, PubSub } from "type-graphql";
-// import { PubSub } from "apollo-server-express";
 import { UserResolver } from "./resolver/UserResolver";
 import { verify } from "jsonwebtoken";
 import { User } from "./entity/User";
@@ -102,9 +100,6 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
       // validate: false,
       // pubSub,
     }),
-    // validationRules : {
-
-    // }
     subscriptions: {
       path: "/chat",
       onConnect: () => {
@@ -126,9 +121,4 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
       `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
     );
   });
-  // app.listen(4000, () => {
-  //   console.log(
-  //     "express journey started on http://localhost:4000/graphql/ Keep going jon!"
-  //   );
-  // });
 })();
