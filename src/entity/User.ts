@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  OneToMany,
+} from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
+import { Message } from "./Message";
 
 @ObjectType()
 @Entity("users")
@@ -24,4 +31,7 @@ export class User extends BaseEntity {
 
   @Column("int", { default: 0 })
   tokenVersion: number;
+
+  @OneToMany((_) => Message, (inverseSide) => inverseSide.user)
+  messages: [Message];
 }

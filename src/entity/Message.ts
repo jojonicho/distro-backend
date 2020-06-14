@@ -1,5 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
+import { User } from "./User";
 
 @ObjectType()
 @Entity("messages")
@@ -8,9 +16,9 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
-  @Column()
-  username: string;
+  @ManyToOne(() => User, (user) => user.messages, { cascade: true })
+  @JoinColumn({ referencedColumnName: "username", name: "username" })
+  user: User;
 
   @Field()
   @Column()

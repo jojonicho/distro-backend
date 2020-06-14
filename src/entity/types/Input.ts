@@ -5,10 +5,6 @@ import { Field, InputType } from "type-graphql";
 @InputType()
 export class MessageInput {
   @Field()
-  @Column("text", { nullable: false, unique: true })
-  username: string;
-
-  @Field()
   @Column("text", { nullable: false })
   content: string;
 }

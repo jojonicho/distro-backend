@@ -16,6 +16,7 @@ import { MyContext } from "./types/context";
 import { isAuth } from "../middleware/isAuth";
 import { User } from "../entity/User";
 import { MessageInput } from "../entity/types/Input";
+import { verify } from "jsonwebtoken";
 // import { subscribe } from "graphql";
 
 Resolver();
@@ -42,21 +43,26 @@ export class MessageResolver {
 
   @Mutation(() => Boolean)
   async sendMessage(
-    @Arg("input") { username, content }: MessageInput,
-    @PubSub("MESSAGES") publish: Publisher<Message>
+    @Arg("input") { content }: MessageInput,
+    @PubSub("MESSAGES") publish: Publisher<Message>,
+    @Ctx() { req }: MyContext
   ): Promise<Boolean> {
     const date = new Date().toISOString();
-    console.log(date);
+    const auth = req.headers["authorization"];
+    if (!auth) return false;
     try {
+      const token = auth.split(" ")[1];
+      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+      const user = await User.findOne(payload!.userId);
       const message = Message.create({
-        username,
+        user,
         content,
         date,
       });
       await message.save();
       await publish(message);
-    } catch (e) {
-      console.log(e);
+    } catch (err) {
+      console.log(err);
     }
     return true;
   }
