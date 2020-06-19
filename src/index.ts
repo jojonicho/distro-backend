@@ -16,8 +16,7 @@ import connectRedis from "connect-redis";
 import { redis } from "./redis";
 import { MessageResolver } from "./resolver/MessageResolver";
 import { createServer } from "http";
-// import Redis from "ioredis";
-import { RedisPubSub } from "graphql-redis-subscriptions";
+// import { RedisPubSub } from "graphql-redis-subscriptions";
 
 (async () => {
   const PORT = 4000;
@@ -34,8 +33,8 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
   //   subscriber: new Redis(options),
   // });
 
-  const app = express();
   const RedisStore = connectRedis(session);
+  const app = express();
 
   app.use(
     cors({
@@ -77,38 +76,42 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
     }
 
     // valid response
-    const user = await User.findOne({ id: payload.userId });
-    if (!user) {
+    try {
+      const user = await User.findOne({ id: payload.userId });
+      if (!user) {
+        return res.send({ ok: false, accessToken: "" });
+      }
+      if (user.tokenVersion !== payload.tokenVersion) {
+        console.log(user.tokenVersion);
+        console.log(payload.tokenVersion);
+        return res.send({ ok: false, accessToken: "" });
+      }
+      sendRefreshToken(res, createRefreshToken(user));
+      return res.send({ ok: true, accessToken: createAccessToken(user) });
+    } catch (e) {
+      console.log(e);
       return res.send({ ok: false, accessToken: "" });
     }
-    if (user.tokenVersion !== payload.tokenVersion) {
-      return res.send({ ok: false, accessToken: "" });
-    }
-    sendRefreshToken(res, createRefreshToken(user));
-    return res.send({ ok: true, accessToken: createAccessToken(user) });
   });
 
   await createConnection();
 
   // const pubSub = new PubSub();
-  const pubsub = new RedisPubSub();
+  // const pubsub = new RedisPubSub();
 
   const server = new ApolloServer({
     schema: await buildSchema({
       resolvers: [UserResolver, MessageResolver],
       dateScalarMode: "isoDate", // "timestamp" or "isoDate"
-      // validate: false,
-      // pubSub,
     }),
     subscriptions: {
-      path: "/chat",
+      path: "/subscriptions",
       onConnect: () => {
         console.log("yay");
       },
     },
-    context: ({ req, res }) => ({ req, res, pubsub }),
+    context: ({ req, res }) => ({ req, res }),
   });
-
   server.applyMiddleware({ app, cors: false });
   const httpServer = createServer(app);
   // without this no subscriptions lol

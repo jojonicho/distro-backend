@@ -1,12 +1,16 @@
 import { Column } from "typeorm";
 import { IsEmail, MinLength, MaxLength } from "class-validator";
 import { Field, InputType } from "type-graphql";
+// import { User } from "../User";
 
 @InputType()
 export class MessageInput {
   @Field()
   @Column("text", { nullable: false })
   content: string;
+  // @Field()
+  // @Column("text", { nullable: false })
+  // user: User;
 }
 
 @InputType()

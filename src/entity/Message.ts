@@ -16,6 +16,7 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Field(() => User)
   @ManyToOne(() => User, (user) => user.messages, { cascade: true })
   @JoinColumn({ referencedColumnName: "username", name: "username" })
   user: User;
