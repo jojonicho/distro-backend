@@ -36,7 +36,7 @@ export class MessageResolver {
   @UseMiddleware(isAuth)
   async message(@Ctx() { payload }: MyContext) {
     const user = await User.findOne(payload!.userId);
-    const username = user?.username;
+    const username = user!.username;
     const messages = await Message.find({ where: username });
     return messages;
   }
@@ -47,7 +47,7 @@ export class MessageResolver {
     @PubSub("MESSAGES") publish: Publisher<Message>,
     @Ctx() { req }: MyContext
   ): Promise<Boolean> {
-    const date = new Date().toISOString();
+    const date = new Date();
     const auth = req.headers["authorization"];
     if (!auth) return false;
     try {
