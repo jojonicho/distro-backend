@@ -2,11 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  BaseEntity,
   ManyToOne,
-  JoinColumn,
+  // JoinColumn,
+  BaseEntity,
 } from "typeorm";
-import { ObjectType, Field, Int } from "type-graphql";
+import { Field, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
 
 @ObjectType()
@@ -16,11 +16,6 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field(() => User)
-  @ManyToOne(() => User, (user) => user.messages, { cascade: true })
-  @JoinColumn({ referencedColumnName: "username", name: "username" })
-  user: User;
-
   @Field()
   @Column()
   date: Date;
@@ -28,4 +23,8 @@ export class Message extends BaseEntity {
   @Field()
   @Column("text", { nullable: false })
   content: string;
+
+  @ManyToOne(() => User, (user) => user.message, { lazy: true, cascade: true })
+  @Field(() => User)
+  user: User;
 }

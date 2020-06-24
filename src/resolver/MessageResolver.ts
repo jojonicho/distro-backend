@@ -27,9 +27,9 @@ export class MessageResolver {
   }
 
   @Query(() => [Message])
-  messages(@Ctx() { payload }: MyContext) {
-    console.log(payload);
-    return Message.find();
+  async messages() {
+    const messages = await Message.find();
+    return messages;
   }
 
   @Query(() => [Message])

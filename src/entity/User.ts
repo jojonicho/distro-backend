@@ -4,6 +4,7 @@ import {
   Column,
   BaseEntity,
   OneToMany,
+  // JoinColumn,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 import { Message } from "./Message";
@@ -32,6 +33,7 @@ export class User extends BaseEntity {
   @Column("int", { default: 0 })
   tokenVersion: number;
 
-  @OneToMany((_) => Message, (inverseSide) => inverseSide.user)
-  messages: [Message];
+  @OneToMany(() => Message, (message) => message.user, { lazy: true })
+  @Field(() => [Message])
+  message: Message[];
 }
