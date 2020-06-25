@@ -33,6 +33,10 @@ export class User extends BaseEntity {
   @Column("int", { default: 0 })
   tokenVersion: number;
 
+  @Field()
+  @Column("text", { default: "https://i.imgur.com/7lIcAP5.gif" })
+  image: string;
+
   @OneToMany(() => Message, (message) => message.user, { lazy: true })
   @Field(() => [Message])
   message: Message[];
