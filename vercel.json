@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "index.js",
+      "src": "/src/index.ts",
       "use": "@now/node-server"
     }
   ],
@@ -13,8 +13,8 @@
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Accept"
       },
-      "src": "/.*",
-      "dest": "/index.js"
+      "src": "/src/.*",
+      "dest": "/src/index.js"
     }
   ]
 }
