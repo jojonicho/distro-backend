@@ -5,6 +5,7 @@ import {
   ManyToOne,
   // JoinColumn,
   BaseEntity,
+  CreateDateColumn,
 } from "typeorm";
 import { Field, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
@@ -17,7 +18,7 @@ export class Message extends BaseEntity {
   id: number;
 
   @Field()
-  @Column()
+  @CreateDateColumn()
   date: Date;
 
   @Field()
