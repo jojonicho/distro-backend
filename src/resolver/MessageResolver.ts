@@ -10,6 +10,7 @@ import {
   Root,
   PubSub,
   Publisher,
+  Int,
 } from "type-graphql";
 import { Message } from "../entity/Message";
 import { MyContext } from "./types/context";
@@ -65,5 +66,16 @@ export class MessageResolver {
       console.log(err);
     }
     return true;
+  }
+
+  @Mutation(() => Boolean)
+  async deleteMessage(@Arg("id", () => Int) id: number) {
+    try {
+      await Message.delete(id);
+      return true;
+    } catch (e) {
+      console.log(e);
+    }
+    return false;
   }
 }
