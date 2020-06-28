@@ -5,5 +5,6 @@ export interface MyContext {
   req: Request;
   res: Response;
   pubsub: any;
-  payload?: { userId: string };
+  payload?: { userId: number };
+  currentChannel?: { channelId: number };
 }

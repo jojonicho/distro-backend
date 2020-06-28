@@ -16,6 +16,7 @@ import connectRedis from "connect-redis";
 import { redis } from "./redis";
 import { MessageResolver } from "./resolver/MessageResolver";
 import { createServer } from "http";
+import { ChannelResolver } from "./resolver/ChannelResolver";
 // import { RedisPubSub } from "graphql-redis-subscriptions";
 
 (async () => {
@@ -101,7 +102,7 @@ import { createServer } from "http";
 
   const server = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver, MessageResolver],
+      resolvers: [UserResolver, MessageResolver, ChannelResolver],
       dateScalarMode: "isoDate", // "timestamp" or "isoDate"
     }),
     subscriptions: {

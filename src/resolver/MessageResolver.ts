@@ -18,6 +18,7 @@ import { isAuth } from "../middleware/isAuth";
 import { User } from "../entity/User";
 import { MessageInput } from "../entity/types/Input";
 import { verify } from "jsonwebtoken";
+import { Channel } from "../entity/Channel";
 // import { subscribe } from "graphql";
 
 Resolver();
@@ -30,6 +31,14 @@ export class MessageResolver {
   @Query(() => [Message])
   async messages() {
     const messages = await Message.find();
+    return messages;
+  }
+
+  @Query(() => [Message])
+  @UseMiddleware(isAuth)
+  async channelMessages(@Ctx() { currentChannel }: MyContext) {
+    const channel = await Channel.findOne(currentChannel!.channelId);
+    const messages = await Message.find({ where: channel });
     return messages;
   }
 

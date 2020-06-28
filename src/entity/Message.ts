@@ -25,7 +25,7 @@ export class Message extends BaseEntity {
   @Column("text", { nullable: false })
   content: string;
 
-  @ManyToOne(() => User, (user) => user.message, { lazy: true, cascade: true })
+  @ManyToOne(() => User, (user) => user.messages, { lazy: true, cascade: true })
   @Field(() => User)
   user: User;
 }
