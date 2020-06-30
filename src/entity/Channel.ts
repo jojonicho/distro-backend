@@ -4,9 +4,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
+  OneToMany,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 import { User } from "./User";
+import { Message } from "./Message";
 
 @ObjectType()
 @Entity("channels")
@@ -26,4 +28,8 @@ export class Channel extends BaseEntity {
   @Field()
   @Column("text", { default: "https://i.imgur.com/7lIcAP5.gif" })
   image: string;
+
+  @OneToMany(() => Message, (message) => message.channel, { lazy: true })
+  @Field(() => [Message])
+  messages: Message[];
 }

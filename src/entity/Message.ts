@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Field, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
+import { Channel } from "./Channel";
 
 @ObjectType()
 @Entity("messages")
@@ -28,4 +29,11 @@ export class Message extends BaseEntity {
   @ManyToOne(() => User, (user) => user.messages, { lazy: true, cascade: true })
   @Field(() => User)
   user: User;
+
+  @ManyToOne(() => Channel, (channel) => channel.messages, {
+    lazy: true,
+    cascade: true,
+  })
+  @Field(() => Channel)
+  channel: Channel;
 }
