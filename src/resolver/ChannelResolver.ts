@@ -6,6 +6,7 @@ import {
   Root,
   Query,
   Ctx,
+  Int,
 } from "type-graphql";
 import { User } from "../entity/User";
 import { Channel } from "../entity/Channel";
@@ -46,5 +47,17 @@ export class ChannelResolver {
   async channels() {
     const channels = await Channel.find();
     return channels;
+  }
+
+  @Query(() => [User])
+  async channelUsers(@Arg("channelId", () => Int) channelId: number) {
+    try {
+      const channel = await Channel.findOne(channelId);
+      const users = channel!.users;
+      return users;
+    } catch (e) {
+      console.log(e);
+    }
+    return [];
   }
 }

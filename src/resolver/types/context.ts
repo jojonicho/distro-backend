@@ -6,5 +6,4 @@ export interface MyContext {
   res: Response;
   pubsub: any;
   payload?: { userId: number };
-  currentChannel?: { channelId: number };
 }
