@@ -12,6 +12,7 @@ import { User } from "../entity/User";
 import { Channel } from "../entity/Channel";
 import { MyContext } from "./types/context";
 import { verify } from "jsonwebtoken";
+// import { In } from "typeorm";
 
 Resolver();
 export class ChannelResolver {
@@ -35,7 +36,8 @@ export class ChannelResolver {
         name: channelName,
       });
       await channel.save();
-      channel.users.push(user!);
+      channel.users = [user!];
+      await channel.save();
     } catch (e) {
       console.log(e);
       return false;
@@ -52,9 +54,14 @@ export class ChannelResolver {
   @Query(() => [User])
   async channelUsers(@Arg("channelId", () => Int) channelId: number) {
     try {
-      const channel = await Channel.findOne(channelId);
-      const users = channel!.users;
-      return users;
+      // const channel = await Channel.findOne(channelId);
+      const channel = await Channel.findOne({
+        where: { id: channelId },
+        relations: ["users"],
+      });
+      // console.log(channel!);
+      // const users = await User.find({ where: { id: In(usersIds!) } });
+      return channel!.users;
     } catch (e) {
       console.log(e);
     }

@@ -40,7 +40,6 @@ export class MessageResolver {
   async channelMessages(@Arg("channelId", () => Int) channelId: number) {
     // const messages = await Message.find({ where: { channelId } });
     const channel = await Channel.findOne(channelId);
-    console.log(channel?.name);
     const messages = await Message.find({ where: { channel } });
     return messages;
   }
