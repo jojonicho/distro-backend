@@ -46,6 +46,5 @@ export class User extends BaseEntity {
 
   @ManyToMany(() => Channel, (channel: Channel) => channel.users)
   @JoinTable()
-  @Field(() => [Channel])
   channels: Channel[];
 }

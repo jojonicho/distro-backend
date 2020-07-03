@@ -32,6 +32,5 @@ export class Channel extends BaseEntity {
 
   @OneToMany(() => Message, (message) => message.channel, { lazy: true })
   @JoinTable()
-  @Field(() => [Message])
   messages: Message[];
 }
