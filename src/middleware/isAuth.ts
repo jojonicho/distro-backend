@@ -1,5 +1,4 @@
 import { MiddlewareFn } from "type-graphql";
-
 import { verify } from "jsonwebtoken";
 import { MyContext } from "../resolver/types/context";
 
@@ -10,7 +9,7 @@ export const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
     throw new Error("unauthorized access");
   }
   try {
-    const token = authorize?.split(" ")[1];
+    const token = authorize.split(" ")[1];
     const payload = verify(token, process.env.ACCESS_TOKEN_SECRET!);
     context.payload = payload as any;
   } catch (err) {

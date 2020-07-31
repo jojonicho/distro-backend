@@ -114,28 +114,30 @@ export class UserResolver {
     @Ctx() { res }: MyContext
   ): Promise<LoginResponse> {
     const user = await User.findOne({ where: { email } });
+
     if (!user) {
       throw new Error("Invalid email");
     }
 
     const valid = await compare(password, user.password);
+
     if (!valid) {
       throw new Error("Invalid password");
     }
 
+    //optional, cant really use redis with free heroku
     if (!user.confirmed) {
       throw new Error("Please confirm your account");
     }
-    //successful login
-    res.cookie("jid", createRefreshToken(user), {
-      httpOnly: true,
-    });
+
+    // login successful
+    sendRefreshToken(res, createRefreshToken(user));
+
     return {
       accessToken: createAccessToken(user),
-      user: user,
+      user,
     };
   }
-
   @Mutation(() => Boolean)
   logout(@Ctx() { res }: MyContext): Boolean {
     sendRefreshToken(res, "");
