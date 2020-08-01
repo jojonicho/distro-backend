@@ -11,7 +11,7 @@ import { User } from "./entity/User";
 import { createRefreshToken, createAccessToken } from "./utils/auth";
 import { sendRefreshToken } from "./utils/sendRefreshToken";
 import cookieParser from "cookie-parser";
-import session from "express-session";
+// import session from "express-session";
 // import connectRedis from "connect-redis";
 // import { redis } from "./redis";
 
@@ -22,45 +22,32 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
 
 (async () => {
   const PORT = 4000;
-  // const REDIS_HOST = ""; // replace with own IP
-  // const REDIS_PORT = 6379;
-  // const options: Redis.RedisOptions = {
-  //   host: REDIS_HOST,
-  //   port: REDIS_PORT,
-  //   retryStrategy: (times) => Math.max(times * 100, 3000),
-  // };
-
-  // const pubSub = new RedisPubSub({
-  //   publisher: new Redis(options),
-  //   subscriber: new Redis(options),
-  // });
-
-  // const RedisStore = connectRedis(session);
   const app = express();
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      // origin: "http://localhost:3000",
+      origin: "https://distro.vercel.app/",
       credentials: true,
     })
   );
   app.use(cookieParser());
-  app.use(
-    session({
-      // store: new RedisStore({
-      //   client: redis,
-      // }),
-      name: "qid",
-      secret: "asdasdaakoasdk",
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
-      },
-    })
-  );
+  // app.use(
+  //   session({
+  //     store: new RedisStore({
+  //       client: redis,
+  //     }),
+  //     name: "qid",
+  //     secret: "asdasdaakoasdk",
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     cookie: {
+  //       httpOnly: true,
+  //       secure: process.env.NODE_ENV === "production",
+  //       maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
+  //     },
+  //   })
+  // );
   app.get("/", (_req, res) => res.send("helllo"));
   app.post("/refresh_token", async (req, res) => {
     // refresh token
