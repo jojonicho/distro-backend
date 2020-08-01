@@ -20,97 +20,97 @@ import { createServer } from "http";
 import { ChannelResolver } from "./resolver/ChannelResolver";
 // import { RedisPubSub } from "graphql-redis-subscriptions";
 
-(async () => {
-  const PORT = 4000;
-  const app = express();
+const PORT = 4000;
+const app = express();
 
-  app.use(
-    cors({
-      // origin: "http://localhost:3000",
-      origin: "https://distro.vercel.app/",
-      credentials: true,
-    })
-  );
-  app.use(cookieParser());
-  // app.use(
-  //   session({
-  //     store: new RedisStore({
-  //       client: redis,
-  //     }),
-  //     name: "qid",
-  //     secret: "asdasdaakoasdk",
-  //     resave: false,
-  //     saveUninitialized: false,
-  //     cookie: {
-  //       httpOnly: true,
-  //       secure: process.env.NODE_ENV === "production",
-  //       maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
-  //     },
-  //   })
-  // );
-  app.get("/", (_req, res) => res.send("helllo"));
-  app.post("/refresh_token", async (req, res) => {
-    // refresh token
-    const token = req.cookies.jid;
-    if (!token) {
+app.use(
+  cors({
+    // origin: "http://localhost:3000",
+    origin: "https://distro.vercel.app/",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+app.get("/", (_req, res) => res.send("helllo"));
+app.post("/refresh_token", async (req, res) => {
+  // refresh token
+  const token = req.cookies.jid;
+  if (!token) {
+    return res.send({ ok: false, accessToken: "" });
+  }
+  let payload: any = null;
+  try {
+    payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
+  } catch (err) {
+    console.log(err);
+    return res.send({ ok: false, accessToken: "" });
+  }
+  // valid response
+  try {
+    const user = await User.findOne({ id: payload.userId });
+    if (!user) {
       return res.send({ ok: false, accessToken: "" });
     }
-
-    let payload: any = null;
-    try {
-      payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
-    } catch (err) {
-      console.log(err);
+    if (user.tokenVersion !== payload.tokenVersion) {
       return res.send({ ok: false, accessToken: "" });
     }
+    sendRefreshToken(res, createRefreshToken(user));
+    return res.send({ ok: true, accessToken: createAccessToken(user) });
+  } catch (e) {
+    console.log(e);
+    return res.send({ ok: false, accessToken: "" });
+  }
+});
 
-    // valid response
-    try {
-      const user = await User.findOne({ id: payload.userId });
-      if (!user) {
-        return res.send({ ok: false, accessToken: "" });
-      }
-      if (user.tokenVersion !== payload.tokenVersion) {
-        // console.log(user.tokenVersion);
-        // console.log(payload.tokenVersion);
-        return res.send({ ok: false, accessToken: "" });
-      }
-      sendRefreshToken(res, createRefreshToken(user));
-      return res.send({ ok: true, accessToken: createAccessToken(user) });
-    } catch (e) {
-      console.log(e);
-      return res.send({ ok: false, accessToken: "" });
-    }
-  });
+try {
+  (async () => {
+    // app.use(
+    //   session({
+    //     store: new RedisStore({
+    //       client: redis,
+    //     }),
+    //     name: "qid",
+    //     secret: "asdasdaakoasdk",
+    //     resave: false,
+    //     saveUninitialized: false,
+    //     cookie: {
+    //       httpOnly: true,
+    //       secure: process.env.NODE_ENV === "production",
+    //       maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
+    //     },
+    //   })
+    // );
 
-  await createConnection();
+    await createConnection();
 
-  // const pubSub = new PubSub();
-  // const pubsub = new RedisPubSub();
-
-  const server = new ApolloServer({
-    schema: await buildSchema({
-      resolvers: [UserResolver, MessageResolver, ChannelResolver],
-      dateScalarMode: "isoDate", // "timestamp" or "isoDate"
-    }),
-    subscriptions: {
-      path: "/subscriptions",
-      onConnect: () => {
-        console.log("yay");
+    // const pubSub = new PubSub();
+    // const pubsub = new RedisPubSub();
+    const server = new ApolloServer({
+      schema: await buildSchema({
+        resolvers: [UserResolver, MessageResolver, ChannelResolver],
+        dateScalarMode: "isoDate", // "timestamp" or "isoDate"
+      }),
+      subscriptions: {
+        path: "/subscriptions",
+        onConnect: () => {
+          console.log("yay");
+        },
       },
-    },
-    context: ({ req, res }) => ({ req, res }),
-  });
-  server.applyMiddleware({ app, cors: false });
-  const httpServer = createServer(app);
-  // without this no subscriptions lol
-  server.installSubscriptionHandlers(httpServer);
-  httpServer.listen(PORT, () => {
-    console.log(
-      `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
-    );
-    console.log(
-      `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
-    );
-  });
-})();
+      context: ({ req, res }) => ({ req, res }),
+    });
+    server.applyMiddleware({ app, cors: false });
+    const httpServer = createServer(app);
+    // without this no subscriptions lol
+    server.installSubscriptionHandlers(httpServer);
+    httpServer.listen(PORT, () => {
+      console.log(
+        `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
+      );
+      console.log(
+        `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
+      );
+    });
+  })();
+} catch (e) {
+  console.log(e);
+}
