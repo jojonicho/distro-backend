@@ -34,6 +34,7 @@ app.use(
   })
 );
 app.use(cookieParser());
+
 app.get("/", (_req, res) => res.send("helllo"));
 app.post("/refresh_token", async (req, res) => {
   // refresh token
@@ -94,10 +95,13 @@ app.post("/refresh_token", async (req, res) => {
       // username: connectionOptions.user,
       // password: connectionOptions.password,
       // // database: connectionOptions.database,
-      // synchronize: true,
+      synchronize: true,
       // entities: ["target/entity/**/*.js"],
+      ssl: true,
       extra: {
-        ssl: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       },
     };
     await createConnection(typeOrmOptions);
