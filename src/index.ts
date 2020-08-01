@@ -20,16 +20,21 @@ import { createServer } from "http";
 import { ChannelResolver } from "./resolver/ChannelResolver";
 // import { RedisPubSub } from "graphql-redis-subscriptions";
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const app = express();
 const databaseUrl = process.env.DATABASE_URL;
+
 const URL = databaseUrl
-  ? "https://distro.vercel.app/"
+  ? "https://distrobackend.herokuapp.com"
+  : "http://localhost";
+
+const FRONTEND_URL = databaseUrl
+  ? "https://distro.vercel.app"
   : "http://localhost:3000";
 
 app.use(
   cors({
-    origin: URL,
+    origin: FRONTEND_URL,
     credentials: true,
   })
 );
@@ -127,7 +132,7 @@ app.post("/refresh_token", async (req, res) => {
   const httpServer = createServer(app);
   // without this no subscriptions lol
   server.installSubscriptionHandlers(httpServer);
-  httpServer.listen(process.env.PORT || 4000, () => {
+  httpServer.listen(PORT, () => {
     console.log(`🚀 Server ready at ${URL}:${PORT}${server.graphqlPath}`);
     console.log(
       `🚀 Subscriptions ready at ws://${URL}:${PORT}${server.subscriptionsPath}`
