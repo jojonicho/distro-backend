@@ -126,9 +126,9 @@ export class UserResolver {
     }
 
     //optional, cant really use redis with free heroku
-    if (!user.confirmed) {
-      throw new Error("Please confirm your account");
-    }
+    // if (!user.confirmed) {
+    //   throw new Error("Please confirm your account");
+    // }
 
     // login successful
     sendRefreshToken(res, createRefreshToken(user));
