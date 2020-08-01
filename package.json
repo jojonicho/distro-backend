@@ -15,10 +15,10 @@
     "@types/nodemailer": "^6.4.0",
     "@types/uuid": "^8.0.0",
     "nodemon": "^2.0.4",
-    "ts-node": "8.10.2",
     "typescript": "3.9.5"
   },
   "dependencies": {
+    "ts-node": "8.10.2",
     "apollo-link": "^1.2.14",
     "apollo-server-express": "^2.15.0",
     "bcryptjs": "^2.4.3",
