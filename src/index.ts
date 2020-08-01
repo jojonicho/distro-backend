@@ -26,8 +26,8 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
-      // origin: "https://distro.vercel.app/",
+      // origin: "http://localhost:3000",
+      origin: "https://distro.vercel.app/",
       credentials: true,
     })
   );
