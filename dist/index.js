@@ -27,10 +27,17 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const MessageResolver_1 = require("./resolver/MessageResolver");
 const http_1 = require("http");
 const ChannelResolver_1 = require("./resolver/ChannelResolver");
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const app = express_1.default();
+const databaseUrl = process.env.DATABASE_URL;
+const URL = databaseUrl
+    ? "https://distrobackend.herokuapp.com"
+    : "http://localhost";
+const FRONTEND_URL = databaseUrl
+    ? "https://distro.vercel.app"
+    : "http://localhost:3000";
 app.use(cors_1.default({
-    origin: "http://localhost:3000",
+    origin: FRONTEND_URL,
     credentials: true,
 }));
 app.use(cookie_parser_1.default());
@@ -65,7 +72,23 @@ app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 }));
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    yield typeorm_1.createConnection();
+    if (databaseUrl) {
+        const typeOrmOptions = {
+            type: "postgres",
+            url: databaseUrl,
+            synchronize: true,
+            ssl: true,
+            extra: {
+                ssl: {
+                    rejectUnauthorized: false,
+                },
+            },
+        };
+        yield typeorm_1.createConnection(typeOrmOptions);
+    }
+    else {
+        yield typeorm_1.createConnection();
+    }
     const server = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
             resolvers: [UserResolver_1.UserResolver, MessageResolver_1.MessageResolver, ChannelResolver_1.ChannelResolver],
@@ -83,8 +106,8 @@ app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, funct
     const httpServer = http_1.createServer(app);
     server.installSubscriptionHandlers(httpServer);
     httpServer.listen(PORT, () => {
-        console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
-        console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
+        console.log(`🚀 Server ready at ${URL}:${PORT}${server.graphqlPath}`);
+        console.log(`🚀 Subscriptions ready at ws://${URL}:${PORT}${server.subscriptionsPath}`);
     });
 }))();
 //# sourceMappingURL=index.js.map

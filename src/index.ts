@@ -21,7 +21,6 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
 // import { RedisPubSub } from "graphql-redis-subscriptions";
 
 const PORT = process.env.PORT || 4000;
-const app = express();
 const databaseUrl = process.env.DATABASE_URL;
 
 const URL = databaseUrl
@@ -32,46 +31,46 @@ const FRONTEND_URL = databaseUrl
   ? "https://distro.vercel.app"
   : "http://localhost:3000";
 
-app.use(
-  cors({
-    origin: FRONTEND_URL,
-    credentials: true,
-  })
-);
-app.use(cookieParser());
-
-app.get("/", (_req, res) => res.send("helllo"));
-app.post("/refresh_token", async (req, res) => {
-  // refresh token
-  const token = req.cookies.jid;
-  if (!token) {
-    return res.send({ ok: false, accessToken: "" });
-  }
-  let payload: any = null;
-  try {
-    payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
-  } catch (err) {
-    console.log(err);
-    return res.send({ ok: false, accessToken: "" });
-  }
-  // valid response
-  try {
-    const user = await User.findOne({ id: payload.userId });
-    if (!user) {
-      return res.send({ ok: false, accessToken: "" });
-    }
-    if (user.tokenVersion !== payload.tokenVersion) {
-      return res.send({ ok: false, accessToken: "" });
-    }
-    sendRefreshToken(res, createRefreshToken(user));
-    return res.send({ ok: true, accessToken: createAccessToken(user) });
-  } catch (e) {
-    console.log(e);
-    return res.send({ ok: false, accessToken: "" });
-  }
-});
-
 (async () => {
+  const app = express();
+  app.use(
+    cors({
+      origin: FRONTEND_URL,
+      credentials: true,
+    })
+  );
+  app.use(cookieParser());
+
+  app.get("/", (_req, res) => res.send("helllo"));
+  app.post("/refresh_token", async (req, res) => {
+    // refresh token
+    const token = req.cookies.jid;
+    if (!token) {
+      return res.send({ ok: false, accessToken: "" });
+    }
+    let payload: any = null;
+    try {
+      payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
+    } catch (err) {
+      console.log(err);
+      return res.send({ ok: false, accessToken: "" });
+    }
+    // valid response
+    try {
+      const user = await User.findOne({ id: payload.userId });
+      if (!user) {
+        return res.send({ ok: false, accessToken: "" });
+      }
+      if (user.tokenVersion !== payload.tokenVersion) {
+        return res.send({ ok: false, accessToken: "" });
+      }
+      sendRefreshToken(res, createRefreshToken(user));
+      return res.send({ ok: true, accessToken: createAccessToken(user) });
+    } catch (e) {
+      console.log(e);
+      return res.send({ ok: false, accessToken: "" });
+    }
+  });
   // app.use(
   //   session({
   //     store: new RedisStore({
@@ -101,7 +100,7 @@ app.post("/refresh_token", async (req, res) => {
       // password: connectionOptions.password,
       // // database: connectionOptions.database,
       synchronize: true,
-      // entities: ["target/entity/**/*.js"],
+      entities: ["src/entity/*.ts"],
       ssl: true,
       extra: {
         ssl: {
