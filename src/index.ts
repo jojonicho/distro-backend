@@ -12,8 +12,9 @@ import { createRefreshToken, createAccessToken } from "./utils/auth";
 import { sendRefreshToken } from "./utils/sendRefreshToken";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-import connectRedis from "connect-redis";
-import { redis } from "./redis";
+// import connectRedis from "connect-redis";
+// import { redis } from "./redis";
+
 import { MessageResolver } from "./resolver/MessageResolver";
 import { createServer } from "http";
 import { ChannelResolver } from "./resolver/ChannelResolver";
@@ -34,7 +35,7 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
   //   subscriber: new Redis(options),
   // });
 
-  const RedisStore = connectRedis(session);
+  // const RedisStore = connectRedis(session);
   const app = express();
 
   app.use(
@@ -46,9 +47,9 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
   app.use(cookieParser());
   app.use(
     session({
-      store: new RedisStore({
-        client: redis,
-      }),
+      // store: new RedisStore({
+      //   client: redis,
+      // }),
       name: "qid",
       secret: "asdasdaakoasdk",
       resave: false,

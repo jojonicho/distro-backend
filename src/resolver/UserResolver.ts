@@ -16,11 +16,11 @@ import { getConnection } from "typeorm";
 import { MyContext } from "./types/context";
 import { User } from "../entity/User";
 import { RegisterInput } from "../entity/types/Input";
-import { sendEmail } from "../utils/sendEmail";
-import { createConfirmationUrl } from "../utils/createConfirmationUrl";
-import { redis } from "../redis";
 import { sendRefreshToken } from "../utils/sendRefreshToken";
 import { verify } from "jsonwebtoken";
+// import { sendEmail } from "../utils/sendEmail";
+// import { createConfirmationUrl } from "../utils/createConfirmationUrl";
+// import { redis } from "../redis";
 
 @ObjectType()
 class LoginResponse {
@@ -81,23 +81,23 @@ export class UserResolver {
         password: hashedPassword,
       });
       await user.save(); // important
-      await sendEmail(email, await createConfirmationUrl(user.id));
+      // await sendEmail(email, await createConfirmationUrl(user.id));
     } catch (err) {
       throw new Error(err);
     }
     return true;
   }
 
-  @Mutation(() => Boolean)
-  async confirmEmail(@Arg("token") token: string): Promise<boolean> {
-    const userId = await redis.get(token);
-    if (!userId) {
-      return false;
-    }
-    await User.update({ id: parseInt(userId, 10) }, { confirmed: true });
-    await redis.del(token);
-    return true;
-  }
+  // @Mutation(() => Boolean)
+  // async confirmEmail(@Arg("token") token: string): Promise<boolean> {
+  //   const userId = await redis.get(token);
+  //   if (!userId) {
+  //     return false;
+  //   }
+  //   await User.update({ id: parseInt(userId, 10) }, { confirmed: true });
+  //   await redis.del(token);
+  //   return true;
+  // }
 
   @Mutation(() => Boolean)
   async revokeRefreshTokenUser(@Arg("userId", () => Int) userId: number) {
