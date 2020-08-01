@@ -24,27 +24,31 @@ const User_1 = require("./entity/User");
 const auth_1 = require("./utils/auth");
 const sendRefreshToken_1 = require("./utils/sendRefreshToken");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-(() => __awaiter(void 0, void 0, void 0, function* () {
-    const app = express_1.default();
-    app.use(cors_1.default({
-        origin: "http://localhost:3000",
-        credentials: true,
-    }));
-    app.use(cookie_parser_1.default());
-    app.get("/", (_req, res) => res.send("helllo"));
-    app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        const token = req.cookies.jid;
-        if (!token) {
-            return res.send({ ok: false, accessToken: "" });
-        }
-        let payload = null;
-        try {
-            payload = jsonwebtoken_1.verify(token, process.env.REFRESH_TOKEN_SECRET);
-        }
-        catch (err) {
-            console.log(err);
-            return res.send({ ok: false, accessToken: "" });
-        }
+const MessageResolver_1 = require("./resolver/MessageResolver");
+const http_1 = require("http");
+const ChannelResolver_1 = require("./resolver/ChannelResolver");
+const PORT = 4000;
+const app = express_1.default();
+app.use(cors_1.default({
+    origin: "http://localhost:3000",
+    credentials: true,
+}));
+app.use(cookie_parser_1.default());
+app.get("/", (_req, res) => res.send("helllo"));
+app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const token = req.cookies.jid;
+    if (!token) {
+        return res.send({ ok: false, accessToken: "" });
+    }
+    let payload = null;
+    try {
+        payload = jsonwebtoken_1.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    }
+    catch (err) {
+        console.log(err);
+        return res.send({ ok: false, accessToken: "" });
+    }
+    try {
         const user = yield User_1.User.findOne({ id: payload.userId });
         if (!user) {
             return res.send({ ok: false, accessToken: "" });
@@ -54,17 +58,33 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
         }
         sendRefreshToken_1.sendRefreshToken(res, auth_1.createRefreshToken(user));
         return res.send({ ok: true, accessToken: auth_1.createAccessToken(user) });
-    }));
+    }
+    catch (e) {
+        console.log(e);
+        return res.send({ ok: false, accessToken: "" });
+    }
+}));
+(() => __awaiter(void 0, void 0, void 0, function* () {
     yield typeorm_1.createConnection();
-    const apolloServer = new apollo_server_express_1.ApolloServer({
+    const server = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
-            resolvers: [UserResolver_1.UserResolver],
+            resolvers: [UserResolver_1.UserResolver, MessageResolver_1.MessageResolver, ChannelResolver_1.ChannelResolver],
+            dateScalarMode: "isoDate",
         }),
+        subscriptions: {
+            path: "/subscriptions",
+            onConnect: () => {
+                console.log("yay");
+            },
+        },
         context: ({ req, res }) => ({ req, res }),
     });
-    apolloServer.applyMiddleware({ app, cors: false });
-    app.listen(4000, () => {
-        console.log("express journey started on port 4000! Keep going jon!");
+    server.applyMiddleware({ app, cors: false });
+    const httpServer = http_1.createServer(app);
+    server.installSubscriptionHandlers(httpServer);
+    httpServer.listen(PORT, () => {
+        console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
+        console.log(`🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
     });
 }))();
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { createConnection } from "typeorm";
+import { createConnection, ConnectionOptions } from "typeorm";
 import express from "express";
 import cors from "cors";
 // import { ApolloServer, PubSub } from "apollo-server-express";
@@ -22,11 +22,14 @@ import { ChannelResolver } from "./resolver/ChannelResolver";
 
 const PORT = 4000;
 const app = express();
+const databaseUrl = process.env.DATABASE_URL;
+const URL = databaseUrl
+  ? "https://distro.vercel.app/"
+  : "http://localhost:3000";
 
 app.use(
   cors({
-    // origin: "http://localhost:3000",
-    origin: "https://distro.vercel.app/",
+    origin: URL,
     credentials: true,
   })
 );
@@ -62,55 +65,70 @@ app.post("/refresh_token", async (req, res) => {
   }
 });
 
-try {
-  (async () => {
-    // app.use(
-    //   session({
-    //     store: new RedisStore({
-    //       client: redis,
-    //     }),
-    //     name: "qid",
-    //     secret: "asdasdaakoasdk",
-    //     resave: false,
-    //     saveUninitialized: false,
-    //     cookie: {
-    //       httpOnly: true,
-    //       secure: process.env.NODE_ENV === "production",
-    //       maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
-    //     },
-    //   })
-    // );
+(async () => {
+  // app.use(
+  //   session({
+  //     store: new RedisStore({
+  //       client: redis,
+  //     }),
+  //     name: "qid",
+  //     secret: "asdasdaakoasdk",
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     cookie: {
+  //       httpOnly: true,
+  //       secure: process.env.NODE_ENV === "production",
+  //       maxAge: 100 * 60 * 60 * 24 * 7 * 365, // 7 years
+  //     },
+  //   })
+  // );
 
-    await createConnection();
-
-    // const pubSub = new PubSub();
-    // const pubsub = new RedisPubSub();
-    const server = new ApolloServer({
-      schema: await buildSchema({
-        resolvers: [UserResolver, MessageResolver, ChannelResolver],
-        dateScalarMode: "isoDate", // "timestamp" or "isoDate"
-      }),
-      subscriptions: {
-        path: "/subscriptions",
-        onConnect: () => {
-          console.log("yay");
-        },
+  if (databaseUrl) {
+    // const connectionOptions = PostgressConnectionStringParser.parse(databaseUrl);
+    const typeOrmOptions: ConnectionOptions = {
+      type: "postgres",
+      url: databaseUrl,
+      // name: connectionOptions.application_name,
+      // // host: connectionOptions.host,
+      // // port: connectionOptions.port,
+      // username: connectionOptions.user,
+      // password: connectionOptions.password,
+      // // database: connectionOptions.database,
+      // synchronize: true,
+      // entities: ["target/entity/**/*.js"],
+      extra: {
+        ssl: true,
       },
-      context: ({ req, res }) => ({ req, res }),
-    });
-    server.applyMiddleware({ app, cors: false });
-    const httpServer = createServer(app);
-    // without this no subscriptions lol
-    server.installSubscriptionHandlers(httpServer);
-    httpServer.listen(PORT, () => {
-      console.log(
-        `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
-      );
-      console.log(
-        `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
-      );
-    });
-  })();
-} catch (e) {
-  console.log(e);
-}
+    };
+    await createConnection(typeOrmOptions);
+  } else {
+    await createConnection();
+  }
+  // const pubSub = new PubSub();
+  // const pubsub = new RedisPubSub();
+  const server = new ApolloServer({
+    schema: await buildSchema({
+      resolvers: [UserResolver, MessageResolver, ChannelResolver],
+      dateScalarMode: "isoDate", // "timestamp" or "isoDate"
+    }),
+    subscriptions: {
+      path: "/subscriptions",
+      onConnect: () => {
+        console.log("yay");
+      },
+    },
+    context: ({ req, res }) => ({ req, res }),
+  });
+  server.applyMiddleware({ app, cors: false });
+  const httpServer = createServer(app);
+  // without this no subscriptions lol
+  server.installSubscriptionHandlers(httpServer);
+  httpServer.listen(PORT, () => {
+    console.log(
+      `🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`
+    );
+    console.log(
+      `🚀 Subscriptions ready at ws://localhost:${PORT}${server.subscriptionsPath}`
+    );
+  });
+})();

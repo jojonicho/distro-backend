@@ -8,7 +8,7 @@ exports.isAuth = ({ context }, next) => {
         throw new Error("unauthorized access");
     }
     try {
-        const token = authorize === null || authorize === void 0 ? void 0 : authorize.split(" ")[1];
+        const token = authorize.split(" ")[1];
         const payload = jsonwebtoken_1.verify(token, process.env.ACCESS_TOKEN_SECRET);
         context.payload = payload;
     }
