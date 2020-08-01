@@ -42,7 +42,7 @@
     "uuid": "^8.1.0"
   },
   "scripts": {
-    "start": "node src/index.ts",
+    "start": "ts-node src/index.ts",
     "start:dev": "nodemon --exec ts-node src/index.ts"
   }
 }
