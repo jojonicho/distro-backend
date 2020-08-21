@@ -48,13 +48,17 @@ class MessageResolver {
     newMessage(message) {
         return message;
     }
-    messages(limit, cursor) {
+    messages(limit, cursor, channelId) {
         return __awaiter(this, void 0, void 0, function* () {
             const realLimit = Math.min(25, limit);
             const realLimitPlusOne = realLimit + 1;
-            const qb = typeorm_1.getConnection()
-                .getRepository(Message_1.Message)
-                .createQueryBuilder("m")
+            const msg = typeorm_1.getConnection().getRepository(Message_1.Message).createQueryBuilder("m");
+            if (channelId) {
+                msg.innerJoinAndSelect("m.channel", "c", "c.id = :channelId", {
+                    channelId,
+                });
+            }
+            const qb = msg
                 .innerJoinAndSelect("m.user", "u", "u.id = m.user.id")
                 .orderBy("m.date", "DESC")
                 .take(realLimitPlusOne);
@@ -167,8 +171,9 @@ __decorate([
     type_graphql_1.Query(() => PaginatedMessages),
     __param(0, type_graphql_1.Arg("limit", () => type_graphql_1.Int)),
     __param(1, type_graphql_1.Arg("cursor", () => String, { nullable: true })),
+    __param(2, type_graphql_1.Arg("channelId", () => type_graphql_1.Int, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:paramtypes", [Number, Object, Object]),
     __metadata("design:returntype", Promise)
 ], MessageResolver.prototype, "messages", null);
 __decorate([

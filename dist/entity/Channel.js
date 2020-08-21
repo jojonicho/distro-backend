@@ -27,8 +27,8 @@ __decorate([
     __metadata("design:type", String)
 ], Channel.prototype, "name", void 0);
 __decorate([
-    typeorm_1.ManyToMany(() => User_1.User, (user) => user.channels),
     type_graphql_1.Field(() => [User_1.User]),
+    typeorm_1.ManyToMany(() => User_1.User, (user) => user.channels),
     __metadata("design:type", Array)
 ], Channel.prototype, "users", void 0);
 __decorate([

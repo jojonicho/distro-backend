@@ -37,6 +37,7 @@ const FRONTEND_URL = databaseUrl
     : "http://localhost:3000";
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const app = express_1.default();
+    app.set("trust proxy", 1);
     app.use(cors_1.default({
         origin: FRONTEND_URL,
         credentials: true,

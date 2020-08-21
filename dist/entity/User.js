@@ -49,13 +49,13 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "image", void 0);
 __decorate([
-    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.user),
     type_graphql_1.Field(() => [Message_1.Message], { nullable: true }),
+    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.user),
     __metadata("design:type", Array)
 ], User.prototype, "messages", void 0);
 __decorate([
+    type_graphql_1.Field(() => [Channel_1.Channel], { nullable: true }),
     typeorm_1.ManyToMany(() => Channel_1.Channel, (channel) => channel.users),
-    typeorm_1.JoinTable(),
     __metadata("design:type", Array)
 ], User.prototype, "channels", void 0);
 User = __decorate([

@@ -4,6 +4,7 @@ exports.sendRefreshToken = void 0;
 exports.sendRefreshToken = (res, token) => {
     res.cookie("jid", token, {
         httpOnly: true,
+        secure: false,
         path: "/refresh_token",
     });
 };

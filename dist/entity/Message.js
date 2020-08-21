@@ -37,11 +37,8 @@ __decorate([
     __metadata("design:type", User_1.User)
 ], Message.prototype, "user", void 0);
 __decorate([
-    type_graphql_1.Field(() => Channel_1.Channel),
-    typeorm_1.ManyToOne(() => Channel_1.Channel, (channel) => channel.messages, {
-        lazy: true,
-        cascade: true,
-    }),
+    type_graphql_1.Field(() => Channel_1.Channel, { defaultValue: -1 }),
+    typeorm_1.ManyToOne(() => Channel_1.Channel, (channel) => channel.messages),
     __metadata("design:type", Channel_1.Channel)
 ], Message.prototype, "channel", void 0);
 Message = __decorate([
