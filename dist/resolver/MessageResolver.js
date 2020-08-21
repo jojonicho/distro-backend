@@ -29,22 +29,68 @@ const User_1 = require("../entity/User");
 const Input_1 = require("../entity/types/Input");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const Channel_1 = require("../entity/Channel");
-type_graphql_1.Resolver();
+const typeorm_1 = require("typeorm");
+let PaginatedMessages = class PaginatedMessages {
+};
+__decorate([
+    type_graphql_1.Field(() => [Message_1.Message]),
+    __metadata("design:type", Array)
+], PaginatedMessages.prototype, "messages", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", Boolean)
+], PaginatedMessages.prototype, "hasMore", void 0);
+PaginatedMessages = __decorate([
+    type_graphql_1.ObjectType()
+], PaginatedMessages);
+type_graphql_1.Resolver(Message_1.Message);
 class MessageResolver {
     newMessage(message) {
         return message;
     }
-    messages() {
+    messages(limit, cursor) {
         return __awaiter(this, void 0, void 0, function* () {
-            const messages = yield Message_1.Message.find();
-            return messages;
+            const realLimit = Math.min(25, limit);
+            const realLimitPlusOne = realLimit + 1;
+            const qb = typeorm_1.getConnection()
+                .getRepository(Message_1.Message)
+                .createQueryBuilder("m")
+                .innerJoinAndSelect("m.user", "u", "u.id = m.user.id")
+                .orderBy("m.date", "DESC")
+                .take(realLimitPlusOne);
+            if (cursor) {
+                qb.where("m.date < :cursor", {
+                    cursor: new Date(parseInt(cursor)),
+                });
+            }
+            const messages = yield qb.getMany();
+            return {
+                messages: messages.slice(0, realLimit),
+                hasMore: messages.length === realLimitPlusOne,
+            };
         });
     }
-    channelMessages(channelId) {
+    channelMessages(channelId, limit, cursor) {
         return __awaiter(this, void 0, void 0, function* () {
-            const channel = yield Channel_1.Channel.findOne(channelId);
-            const messages = yield Message_1.Message.find({ where: { channel } });
-            return messages;
+            const realLimit = Math.min(25, limit);
+            const realLimitPlusOne = realLimit + 1;
+            const qb = typeorm_1.getConnection()
+                .getRepository(Message_1.Message)
+                .createQueryBuilder("m")
+                .where("m.channel = :id", { id: channelId })
+                .innerJoinAndSelect("m.user", "u", "u.id = m.user.id")
+                .orderBy("m.date", "DESC")
+                .take(realLimitPlusOne);
+            if (cursor) {
+                qb.where("m.date < :cursor", {
+                    cursor: new Date(parseInt(cursor)),
+                });
+            }
+            const messages = yield qb.getMany();
+            return {
+                messages: messages.slice(0, realLimit),
+                hasMore: messages.length === realLimitPlusOne,
+            };
         });
     }
     sendMessage({ content }, publish, { req }) {
@@ -118,16 +164,20 @@ __decorate([
     __metadata("design:returntype", Message_1.Message)
 ], MessageResolver.prototype, "newMessage", null);
 __decorate([
-    type_graphql_1.Query(() => [Message_1.Message]),
+    type_graphql_1.Query(() => PaginatedMessages),
+    __param(0, type_graphql_1.Arg("limit", () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg("cursor", () => String, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], MessageResolver.prototype, "messages", null);
 __decorate([
-    type_graphql_1.Query(() => [Message_1.Message]),
+    type_graphql_1.Query(() => PaginatedMessages),
     __param(0, type_graphql_1.Arg("channelId", () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg("limit", () => type_graphql_1.Int)),
+    __param(2, type_graphql_1.Arg("cursor", () => String, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Number, Object]),
     __metadata("design:returntype", Promise)
 ], MessageResolver.prototype, "channelMessages", null);
 __decorate([

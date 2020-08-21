@@ -49,8 +49,8 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "image", void 0);
 __decorate([
-    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.user, { lazy: true }),
-    type_graphql_1.Field(() => [Message_1.Message]),
+    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.user),
+    type_graphql_1.Field(() => [Message_1.Message], { nullable: true }),
     __metadata("design:type", Array)
 ], User.prototype, "messages", void 0);
 __decorate([

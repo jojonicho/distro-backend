@@ -32,16 +32,16 @@ __decorate([
     __metadata("design:type", String)
 ], Message.prototype, "content", void 0);
 __decorate([
-    typeorm_1.ManyToOne(() => User_1.User, (user) => user.messages, { lazy: true, cascade: true }),
     type_graphql_1.Field(() => User_1.User),
+    typeorm_1.ManyToOne(() => User_1.User, (user) => user.messages),
     __metadata("design:type", User_1.User)
 ], Message.prototype, "user", void 0);
 __decorate([
+    type_graphql_1.Field(() => Channel_1.Channel),
     typeorm_1.ManyToOne(() => Channel_1.Channel, (channel) => channel.messages, {
         lazy: true,
         cascade: true,
     }),
-    type_graphql_1.Field(() => Channel_1.Channel),
     __metadata("design:type", Channel_1.Channel)
 ], Message.prototype, "channel", void 0);
 Message = __decorate([

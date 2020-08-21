@@ -11,6 +11,8 @@ import {
   PubSub,
   Publisher,
   Int,
+  ObjectType,
+  Field,
 } from "type-graphql";
 import { Message } from "../entity/Message";
 import { MyContext } from "./types/context";
@@ -19,39 +21,89 @@ import { User } from "../entity/User";
 import { MessageInput, ChannelMessageInput } from "../entity/types/Input";
 import { verify } from "jsonwebtoken";
 import { Channel } from "../entity/Channel";
-// import { Channel } from "../entity/Channel";
-// import { subscribe } from "graphql";
+import { getConnection } from "typeorm";
 
-Resolver();
+@ObjectType()
+class PaginatedMessages {
+  @Field(() => [Message])
+  messages: Message[];
+  @Field()
+  hasMore: Boolean;
+}
+
+Resolver(Message);
 export class MessageResolver {
   @Subscription(() => Message, { topics: "MESSAGES" })
   newMessage(@Root() message: Message): Message {
     return message;
   }
 
-  @Query(() => [Message])
-  async messages() {
-    const messages = await Message.find();
-    return messages;
+  @Query(() => PaginatedMessages)
+  async messages(
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Arg("channelId", () => Int, { nullable: true }) channelId: string | null
+  ): Promise<PaginatedMessages> {
+    const realLimit = Math.min(25, limit);
+    const realLimitPlusOne = realLimit + 1;
+
+    const msg = getConnection().getRepository(Message).createQueryBuilder("m");
+
+    if (channelId) {
+      msg.innerJoinAndSelect("m.channel", "c", "c.id = :channelId", {
+        channelId,
+      });
+    }
+
+    const qb = msg
+      .innerJoinAndSelect("m.user", "u", "u.id = m.user.id")
+      .orderBy("m.date", "DESC")
+      .take(realLimitPlusOne);
+
+    if (cursor) {
+      qb.where("m.date < :cursor", {
+        cursor: new Date(parseInt(cursor)),
+      });
+    }
+
+    const messages = await qb.getMany();
+
+    return {
+      messages: messages.slice(0, realLimit),
+      hasMore: messages.length === realLimitPlusOne,
+    };
   }
 
-  @Query(() => [Message])
-  // @UseMiddleware(isAuth)
-  async channelMessages(@Arg("channelId", () => Int) channelId: number) {
-    // const messages = await Message.find({ where: { channelId } });
-    const channel = await Channel.findOne(channelId);
-    const messages = await Message.find({ where: { channel } });
-    return messages;
-  }
+  @Query(() => PaginatedMessages)
+  async channelMessages(
+    @Arg("channelId", () => Int) channelId: number,
+    @Arg("limit", () => Int) limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ): Promise<PaginatedMessages> {
+    const realLimit = Math.min(25, limit);
+    const realLimitPlusOne = realLimit + 1;
 
-  // @Query(() => [Message])
-  // @UseMiddleware(isAuth)
-  // async message(@Ctx() { payload }: MyContext) {
-  //   const user = await User.findOne(payload!.userId);
-  //   const username = user!.username;
-  //   const messages = await Message.find({ where: username });
-  //   return messages;
-  // }
+    const qb = getConnection()
+      .getRepository(Message)
+      .createQueryBuilder("m")
+      .where("m.channel = :id", { id: channelId })
+      .innerJoinAndSelect("m.user", "u", "u.id = m.user.id")
+      .orderBy("m.date", "DESC")
+      .take(realLimitPlusOne);
+
+    if (cursor) {
+      qb.where("m.date < :cursor", {
+        cursor: new Date(parseInt(cursor)),
+      });
+    }
+
+    const messages = await qb.getMany();
+
+    return {
+      messages: messages.slice(0, realLimit),
+      hasMore: messages.length === realLimitPlusOne,
+    };
+  }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)

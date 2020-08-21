@@ -28,7 +28,6 @@ const MessageResolver_1 = require("./resolver/MessageResolver");
 const http_1 = require("http");
 const ChannelResolver_1 = require("./resolver/ChannelResolver");
 const PORT = process.env.PORT || 4000;
-const app = express_1.default();
 const databaseUrl = process.env.DATABASE_URL;
 const URL = databaseUrl
     ? "https://distrobackend.herokuapp.com"
@@ -36,47 +35,49 @@ const URL = databaseUrl
 const FRONTEND_URL = databaseUrl
     ? "https://distro.vercel.app"
     : "http://localhost:3000";
-app.use(cors_1.default({
-    origin: FRONTEND_URL,
-    credentials: true,
-}));
-app.use(cookie_parser_1.default());
-app.get("/", (_req, res) => res.send("helllo"));
-app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const token = req.cookies.jid;
-    if (!token) {
-        return res.send({ ok: false, accessToken: "" });
-    }
-    let payload = null;
-    try {
-        payload = jsonwebtoken_1.verify(token, process.env.REFRESH_TOKEN_SECRET);
-    }
-    catch (err) {
-        console.log(err);
-        return res.send({ ok: false, accessToken: "" });
-    }
-    try {
-        const user = yield User_1.User.findOne({ id: payload.userId });
-        if (!user) {
-            return res.send({ ok: false, accessToken: "" });
-        }
-        if (user.tokenVersion !== payload.tokenVersion) {
-            return res.send({ ok: false, accessToken: "" });
-        }
-        sendRefreshToken_1.sendRefreshToken(res, auth_1.createRefreshToken(user));
-        return res.send({ ok: true, accessToken: auth_1.createAccessToken(user) });
-    }
-    catch (e) {
-        console.log(e);
-        return res.send({ ok: false, accessToken: "" });
-    }
-}));
 (() => __awaiter(void 0, void 0, void 0, function* () {
+    const app = express_1.default();
+    app.use(cors_1.default({
+        origin: FRONTEND_URL,
+        credentials: true,
+    }));
+    app.use(cookie_parser_1.default());
+    app.get("/", (_req, res) => res.send("helllo"));
+    app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        const token = req.cookies.jid;
+        if (!token) {
+            return res.send({ ok: false, accessToken: "" });
+        }
+        let payload = null;
+        try {
+            payload = jsonwebtoken_1.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        }
+        catch (err) {
+            console.log(err);
+            return res.send({ ok: false, accessToken: "" });
+        }
+        try {
+            const user = yield User_1.User.findOne({ id: payload.userId });
+            if (!user) {
+                return res.send({ ok: false, accessToken: "" });
+            }
+            if (user.tokenVersion !== payload.tokenVersion) {
+                return res.send({ ok: false, accessToken: "" });
+            }
+            sendRefreshToken_1.sendRefreshToken(res, auth_1.createRefreshToken(user));
+            return res.send({ ok: true, accessToken: auth_1.createAccessToken(user) });
+        }
+        catch (e) {
+            console.log(e);
+            return res.send({ ok: false, accessToken: "" });
+        }
+    }));
     if (databaseUrl) {
         const typeOrmOptions = {
             type: "postgres",
             url: databaseUrl,
             synchronize: true,
+            entities: ["src/entity/*.ts"],
             ssl: true,
             extra: {
                 ssl: {

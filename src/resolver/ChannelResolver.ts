@@ -12,7 +12,6 @@ import { User } from "../entity/User";
 import { Channel } from "../entity/Channel";
 import { MyContext } from "./types/context";
 import { verify } from "jsonwebtoken";
-// import { In } from "typeorm";
 
 Resolver();
 export class ChannelResolver {

@@ -26,14 +26,12 @@ export class Message extends BaseEntity {
   @Column("text", { nullable: false })
   content: string;
 
-  @ManyToOne(() => User, (user) => user.messages, { lazy: true, cascade: true })
   @Field(() => User)
+  @ManyToOne(() => User, (user) => user.messages)
   user: User;
 
-  @ManyToOne(() => Channel, (channel) => channel.messages, {
-    lazy: true,
-    cascade: true,
-  })
-  @Field(() => Channel)
+  // @Field(() => Channel, { defaultValue: -1 })
+  @Field(() => Channel, { defaultValue: -1 })
+  @ManyToOne(() => Channel, (channel) => channel.messages)
   channel: Channel;
 }

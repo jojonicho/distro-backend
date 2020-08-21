@@ -89,16 +89,9 @@ const FRONTEND_URL = databaseUrl
   // );
 
   if (databaseUrl) {
-    // const connectionOptions = PostgressConnectionStringParser.parse(databaseUrl);
     const typeOrmOptions: ConnectionOptions = {
       type: "postgres",
       url: databaseUrl,
-      // name: connectionOptions.application_name,
-      // // host: connectionOptions.host,
-      // // port: connectionOptions.port,
-      // username: connectionOptions.user,
-      // password: connectionOptions.password,
-      // // database: connectionOptions.database,
       synchronize: true,
       entities: ["src/entity/*.ts"],
       ssl: true,
