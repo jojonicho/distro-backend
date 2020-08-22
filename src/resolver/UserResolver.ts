@@ -37,20 +37,12 @@ export class UserResolver {
     return "hello warudo!";
   }
 
-  // simpler but has error
-  // @Query(() => User)
-  // @UseMiddleware(isAuth)
-  // me(@Ctx() { payload }: MyContext) {
-  //   return User.findOne(payload!.userId);
-  // }
-
   @Query(() => User, { nullable: true })
   me(@Ctx() { req }: MyContext) {
     const auth = req.headers["authorization"];
     if (!auth) return null;
 
     try {
-      // console.log(auth);
       const token = auth.split(" ")[1];
       const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
       return User.findOne(payload!.userId);

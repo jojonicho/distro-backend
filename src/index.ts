@@ -41,7 +41,6 @@ const FRONTEND_URL = databaseUrl
     })
   );
   app.use(cookieParser());
-
   app.get("/", (_req, res) => res.send("helllo"));
   app.post("/refresh_token", async (req, res) => {
     // refresh token
