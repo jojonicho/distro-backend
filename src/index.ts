@@ -33,7 +33,6 @@ const FRONTEND_URL = databaseUrl
 
 (async () => {
   const app = express();
-  app.set("trust proxy", 1);
   app.use(
     cors({
       origin: FRONTEND_URL,
@@ -41,6 +40,7 @@ const FRONTEND_URL = databaseUrl
     })
   );
   app.use(cookieParser());
+  app.set("trust proxy", 1);
   app.get("/", (_req, res) => res.send("helllo"));
   app.post("/refresh_token", async (req, res) => {
     // refresh token
