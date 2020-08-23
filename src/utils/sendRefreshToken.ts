@@ -1,18 +1,11 @@
 import { Response } from "express";
-
-// export const sendRefreshToken = (res: Response, token: string) => {
-//   res.cookie("jid", token, {
-//     path: "/refresh_token",
-//     httpOnly: true,
-//     secure: false,
-//   });
-// };
+import { __prod__, COOKIE_NAME } from "../constants";
 
 export const sendRefreshToken = (res: Response, token: string) => {
-  res.cookie("jid", token, {
+  res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    sameSite: __prod__ ? "none" : "lax",
+    secure: __prod__,
     path: "/refresh_token",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });

@@ -18,7 +18,7 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
+  @Field(() => String)
   @CreateDateColumn()
   date: Date;
 
