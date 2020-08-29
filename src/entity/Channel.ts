@@ -5,6 +5,7 @@ import {
   Column,
   ManyToMany,
   OneToMany,
+  JoinTable,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
 import { User } from "./User";
@@ -21,6 +22,7 @@ export class Channel extends BaseEntity {
   @Column("text", { nullable: false })
   name: string;
 
+  @JoinTable()
   @Field(() => [User])
   @ManyToMany(() => User, (user) => user.channels)
   users: User[];
@@ -30,6 +32,8 @@ export class Channel extends BaseEntity {
   image: string;
 
   @Field(() => [Message])
-  @OneToMany(() => Message, (message) => message.channel)
+  @OneToMany(() => Message, (message) => message.channel, {
+    // onDelete: "CASCADE",
+  })
   messages: Message[];
 }

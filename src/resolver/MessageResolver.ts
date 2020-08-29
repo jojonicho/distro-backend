@@ -18,7 +18,7 @@ import { Message } from "../entity/Message";
 import { MyContext } from "./types/context";
 import { isAuth } from "../middleware/isAuth";
 import { User } from "../entity/User";
-import { MessageInput, ChannelMessageInput } from "../entity/types/Input";
+import { MessageInput } from "../entity/types/Input";
 import { verify } from "jsonwebtoken";
 import { Channel } from "../entity/Channel";
 import { getConnection } from "typeorm";
@@ -108,34 +108,7 @@ export class MessageResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async sendMessage(
-    @Arg("input") { content }: MessageInput,
-    @PubSub("MESSAGES") publish: Publisher<Message>,
-    @Ctx() { req }: MyContext
-  ): Promise<Boolean> {
-    const date = new Date();
-    const auth = req.headers["authorization"];
-    if (!auth) return false;
-    try {
-      const token = auth.split(" ")[1];
-      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
-      const user = await User.findOne(payload!.userId);
-      const message = Message.create({
-        user,
-        content,
-        date,
-      });
-      await message.save();
-      await publish(message);
-    } catch (err) {
-      console.log(err);
-    }
-    return true;
-  }
-
-  @Mutation(() => Boolean)
-  @UseMiddleware(isAuth)
-  async sendChannelMessage(
-    @Arg("input") { content, channelId }: ChannelMessageInput,
+    @Arg("input") { content, channelId }: MessageInput,
     @PubSub("MESSAGES") publish: Publisher<Message>,
     @Ctx() { req }: MyContext
   ): Promise<Boolean> {
@@ -160,6 +133,35 @@ export class MessageResolver {
     }
     return true;
   }
+
+  // @Mutation(() => Boolean)
+  // @UseMiddleware(isAuth)
+  // async sendChannelMessage(
+  //   @Arg("input") { content, channelId }: MessageInput,
+  //   @PubSub("MESSAGES") publish: Publisher<Message>,
+  //   @Ctx() { req }: MyContext
+  // ): Promise<Boolean> {
+  //   const date = new Date();
+  //   const auth = req.headers["authorization"];
+  //   if (!auth) return false;
+  //   try {
+  //     const token = auth.split(" ")[1];
+  //     const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+  //     const user = await User.findOne(payload!.userId);
+  //     const channel = await Channel.findOne(channelId);
+  //     const message = Message.create({
+  //       user,
+  //       content,
+  //       date,
+  //       channel,
+  //     });
+  //     await message.save();
+  //     await publish(message);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  //   return true;
+  // }
 
   @Mutation(() => Boolean)
   async deleteMessage(@Arg("id", () => Int) id: number) {

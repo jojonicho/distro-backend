@@ -32,6 +32,8 @@ export class Message extends BaseEntity {
 
   // @Field(() => Channel, { defaultValue: -1 })
   @Field(() => Channel, { defaultValue: -1 })
-  @ManyToOne(() => Channel, (channel) => channel.messages)
+  @ManyToOne(() => Channel, (channel) => channel.messages, {
+    onDelete: "CASCADE",
+  })
   channel: Channel;
 }

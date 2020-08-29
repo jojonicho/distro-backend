@@ -12,6 +12,7 @@ import { User } from "../entity/User";
 import { Channel } from "../entity/Channel";
 import { MyContext } from "./types/context";
 import { verify } from "jsonwebtoken";
+import { getConnection } from "typeorm";
 
 Resolver();
 export class ChannelResolver {
@@ -30,13 +31,15 @@ export class ChannelResolver {
     try {
       const token = auth.split(" ")[1];
       const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
-      const user = await User.findOne(payload!.userId);
-      const channel = Channel.create({
+      const { userId } = payload;
+      const channel = await Channel.create({
         name: channelName,
-      });
-      await channel.save();
-      channel.users = [user!];
-      await channel.save();
+      }).save();
+      await getConnection()
+        .createQueryBuilder()
+        .relation(User, "channels")
+        .of(userId)
+        .add(channel.id);
     } catch (e) {
       console.log(e);
       return false;
@@ -45,8 +48,18 @@ export class ChannelResolver {
   }
 
   @Query(() => [Channel])
-  async channels() {
-    const channels = await Channel.find();
+  async channels(@Ctx() { req }: MyContext) {
+    const auth = req.headers["authorization"];
+    if (!auth) return false;
+    const token = auth.split(" ")[1];
+    const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+    const { userId } = payload;
+    // const channels = await Channel.find({ where: { users: userId } });
+    const channels = await getConnection()
+      .createQueryBuilder()
+      .relation(User, "channels")
+      .of(userId)
+      .loadMany();
     return channels;
   }
 
@@ -58,7 +71,7 @@ export class ChannelResolver {
         where: { id: channelId },
         relations: ["users"],
       });
-      // console.log(channel!);
+      console.log(channel!);
       // const users = await User.find({ where: { id: In(usersIds!) } });
       return channel!.users;
     } catch (e) {

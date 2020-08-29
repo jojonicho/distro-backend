@@ -3,17 +3,21 @@ import { IsEmail, MinLength, MaxLength } from "class-validator";
 import { Field, InputType, Int } from "type-graphql";
 // import { User } from "../User";
 
+// @InputType()
+// export class MessageInput {
+//   @Field()
+//   @Column("text", { nullable: false })
+//   content: string;
+// }
+
 @InputType()
 export class MessageInput {
   @Field()
   @Column("text", { nullable: false })
   content: string;
-}
 
-@InputType()
-export class ChannelMessageInput extends MessageInput {
-  @Field(() => Int)
-  @Column({ nullable: false, unique: true })
+  @Field(() => Int, { nullable: true })
+  @Column({ nullable: true, unique: true })
   channelId: number;
 }
 

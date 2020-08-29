@@ -5,6 +5,7 @@ import {
   BaseEntity,
   OneToMany,
   ManyToMany,
+  JoinTable,
   // JoinColumn,
 } from "typeorm";
 import { ObjectType, Field, Int } from "type-graphql";
@@ -43,6 +44,7 @@ export class User extends BaseEntity {
   @OneToMany(() => Message, (message) => message.user)
   messages: Message[];
 
+  @JoinTable()
   @Field(() => [Channel], { nullable: true })
   @ManyToMany(() => Channel, (channel: Channel) => channel.users)
   channels: Channel[];
