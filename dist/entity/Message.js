@@ -22,7 +22,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Message.prototype, "id", void 0);
 __decorate([
-    type_graphql_1.Field(),
+    type_graphql_1.Field(() => String),
     typeorm_1.CreateDateColumn(),
     __metadata("design:type", Date)
 ], Message.prototype, "date", void 0);
@@ -38,7 +38,9 @@ __decorate([
 ], Message.prototype, "user", void 0);
 __decorate([
     type_graphql_1.Field(() => Channel_1.Channel, { defaultValue: -1 }),
-    typeorm_1.ManyToOne(() => Channel_1.Channel, (channel) => channel.messages),
+    typeorm_1.ManyToOne(() => Channel_1.Channel, (channel) => channel.messages, {
+        onDelete: "CASCADE",
+    }),
     __metadata("design:type", Channel_1.Channel)
 ], Message.prototype, "channel", void 0);
 Message = __decorate([

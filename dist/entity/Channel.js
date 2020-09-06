@@ -27,6 +27,7 @@ __decorate([
     __metadata("design:type", String)
 ], Channel.prototype, "name", void 0);
 __decorate([
+    typeorm_1.JoinTable(),
     type_graphql_1.Field(() => [User_1.User]),
     typeorm_1.ManyToMany(() => User_1.User, (user) => user.channels),
     __metadata("design:type", Array)
@@ -38,7 +39,7 @@ __decorate([
 ], Channel.prototype, "image", void 0);
 __decorate([
     type_graphql_1.Field(() => [Message_1.Message]),
-    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.channel),
+    typeorm_1.OneToMany(() => Message_1.Message, (message) => message.channel, {}),
     __metadata("design:type", Array)
 ], Channel.prototype, "messages", void 0);
 Channel = __decorate([

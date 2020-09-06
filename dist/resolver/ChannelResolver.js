@@ -26,6 +26,7 @@ const type_graphql_1 = require("type-graphql");
 const User_1 = require("../entity/User");
 const Channel_1 = require("../entity/Channel");
 const jsonwebtoken_1 = require("jsonwebtoken");
+const typeorm_1 = require("typeorm");
 type_graphql_1.Resolver();
 class ChannelResolver {
     newUser(user) {
@@ -39,13 +40,15 @@ class ChannelResolver {
             try {
                 const token = auth.split(" ")[1];
                 const payload = jsonwebtoken_1.verify(token, process.env.ACCESS_TOKEN_SECRET);
-                const user = yield User_1.User.findOne(payload.userId);
-                const channel = Channel_1.Channel.create({
+                const { userId } = payload;
+                const channel = yield Channel_1.Channel.create({
                     name: channelName,
-                });
-                yield channel.save();
-                channel.users = [user];
-                yield channel.save();
+                }).save();
+                yield typeorm_1.getConnection()
+                    .createQueryBuilder()
+                    .relation(User_1.User, "channels")
+                    .of(userId)
+                    .add(channel.id);
             }
             catch (e) {
                 console.log(e);
@@ -54,9 +57,19 @@ class ChannelResolver {
             return true;
         });
     }
-    channels() {
+    channels({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const channels = yield Channel_1.Channel.find();
+            const auth = req.headers["authorization"];
+            if (!auth)
+                return false;
+            const token = auth.split(" ")[1];
+            const payload = jsonwebtoken_1.verify(token, process.env.ACCESS_TOKEN_SECRET);
+            const { userId } = payload;
+            const channels = yield typeorm_1.getConnection()
+                .createQueryBuilder()
+                .relation(User_1.User, "channels")
+                .of(userId)
+                .loadMany();
             return channels;
         });
     }
@@ -67,6 +80,7 @@ class ChannelResolver {
                     where: { id: channelId },
                     relations: ["users"],
                 });
+                console.log(channel);
                 return channel.users;
             }
             catch (e) {
@@ -92,9 +106,10 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ChannelResolver.prototype, "createChannel", null);
 __decorate([
-    type_graphql_1.Query(() => [Channel_1.Channel]),
+    type_graphql_1.Query(() => [Channel_1.Channel], { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ChannelResolver.prototype, "channels", null);
 __decorate([

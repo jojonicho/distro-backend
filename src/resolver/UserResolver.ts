@@ -6,12 +6,10 @@ import {
   ObjectType,
   Field,
   Ctx,
-  // UseMiddleware,
   Int,
 } from "type-graphql";
 import { hash, compare } from "bcryptjs";
 import { createAccessToken, createRefreshToken } from "../utils/auth";
-// import { isAuth } from "../middleware/isAuth";
 import { getConnection } from "typeorm";
 import { MyContext } from "./types/context";
 import { User } from "../entity/User";
@@ -130,6 +128,22 @@ export class UserResolver {
       user,
     };
   }
+  @Mutation(() => String)
+  changeImage(@Ctx() { req }: MyContext, @Arg("image") image: string) {
+    const auth = req.headers["authorization"];
+    if (!auth) return null;
+
+    try {
+      const token = auth.split(" ")[1];
+      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+      User.update({ id: payload!.userId }, { image });
+      return image;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  }
+
   @Mutation(() => Boolean)
   logout(@Ctx() { res }: MyContext): Boolean {
     sendRefreshToken(res, "");

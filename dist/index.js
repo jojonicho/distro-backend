@@ -27,22 +27,17 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const MessageResolver_1 = require("./resolver/MessageResolver");
 const http_1 = require("http");
 const ChannelResolver_1 = require("./resolver/ChannelResolver");
+const constants_1 = require("./constants");
 const PORT = process.env.PORT || 4000;
 const databaseUrl = process.env.DATABASE_URL;
-const URL = databaseUrl
-    ? "https://distrobackend.herokuapp.com"
-    : "http://localhost";
-const FRONTEND_URL = databaseUrl
-    ? "https://distro.vercel.app"
-    : "http://localhost:3000";
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const app = express_1.default();
-    app.set("trust proxy", 1);
     app.use(cors_1.default({
-        origin: FRONTEND_URL,
+        origin: constants_1.FRONTEND_URL,
         credentials: true,
     }));
     app.use(cookie_parser_1.default());
+    app.set("trust proxy", 1);
     app.get("/", (_req, res) => res.send("helllo"));
     app.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = req.cookies.jid;
@@ -94,7 +89,7 @@ const FRONTEND_URL = databaseUrl
     const server = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
             resolvers: [UserResolver_1.UserResolver, MessageResolver_1.MessageResolver, ChannelResolver_1.ChannelResolver],
-            dateScalarMode: "isoDate",
+            dateScalarMode: "timestamp",
         }),
         subscriptions: {
             path: "/subscriptions",
@@ -108,8 +103,8 @@ const FRONTEND_URL = databaseUrl
     const httpServer = http_1.createServer(app);
     server.installSubscriptionHandlers(httpServer);
     httpServer.listen(PORT, () => {
-        console.log(`🚀 Server ready at ${URL}:${PORT}${server.graphqlPath}`);
-        console.log(`🚀 Subscriptions ready at ws://${URL}:${PORT}${server.subscriptionsPath}`);
+        console.log(`🚀 Server ready at ${constants_1.BACKEND_URL}:${PORT}${server.graphqlPath}`);
+        console.log(`🚀 Subscriptions ready at ws://${constants_1.BACKEND_URL}:${PORT}${server.subscriptionsPath}`);
     });
 }))();
 //# sourceMappingURL=index.js.map

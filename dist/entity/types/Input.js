@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterInput = exports.ChannelMessageInput = exports.MessageInput = void 0;
+exports.RegisterInput = exports.MessageInput = void 0;
 const typeorm_1 = require("typeorm");
 const class_validator_1 = require("class-validator");
 const type_graphql_1 = require("type-graphql");
@@ -20,21 +20,15 @@ __decorate([
     typeorm_1.Column("text", { nullable: false }),
     __metadata("design:type", String)
 ], MessageInput.prototype, "content", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true }),
+    typeorm_1.Column({ nullable: true, unique: true }),
+    __metadata("design:type", Number)
+], MessageInput.prototype, "channelId", void 0);
 MessageInput = __decorate([
     type_graphql_1.InputType()
 ], MessageInput);
 exports.MessageInput = MessageInput;
-let ChannelMessageInput = class ChannelMessageInput extends MessageInput {
-};
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int),
-    typeorm_1.Column({ nullable: false, unique: true }),
-    __metadata("design:type", Number)
-], ChannelMessageInput.prototype, "channelId", void 0);
-ChannelMessageInput = __decorate([
-    type_graphql_1.InputType()
-], ChannelMessageInput);
-exports.ChannelMessageInput = ChannelMessageInput;
 let RegisterInput = class RegisterInput {
 };
 __decorate([

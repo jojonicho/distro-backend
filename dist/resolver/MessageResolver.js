@@ -97,31 +97,7 @@ class MessageResolver {
             };
         });
     }
-    sendMessage({ content }, publish, { req }) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const date = new Date();
-            const auth = req.headers["authorization"];
-            if (!auth)
-                return false;
-            try {
-                const token = auth.split(" ")[1];
-                const payload = jsonwebtoken_1.verify(token, process.env.ACCESS_TOKEN_SECRET);
-                const user = yield User_1.User.findOne(payload.userId);
-                const message = Message_1.Message.create({
-                    user,
-                    content,
-                    date,
-                });
-                yield message.save();
-                yield publish(message);
-            }
-            catch (err) {
-                console.log(err);
-            }
-            return true;
-        });
-    }
-    sendChannelMessage({ content, channelId }, publish, { req }) {
+    sendMessage({ content, channelId }, publish, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const date = new Date();
             const auth = req.headers["authorization"];
@@ -195,16 +171,6 @@ __decorate([
     __metadata("design:paramtypes", [Input_1.MessageInput, Function, Object]),
     __metadata("design:returntype", Promise)
 ], MessageResolver.prototype, "sendMessage", null);
-__decorate([
-    type_graphql_1.Mutation(() => Boolean),
-    type_graphql_1.UseMiddleware(isAuth_1.isAuth),
-    __param(0, type_graphql_1.Arg("input")),
-    __param(1, type_graphql_1.PubSub("MESSAGES")),
-    __param(2, type_graphql_1.Ctx()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Input_1.ChannelMessageInput, Function, Object]),
-    __metadata("design:returntype", Promise)
-], MessageResolver.prototype, "sendChannelMessage", null);
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)),

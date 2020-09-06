@@ -106,6 +106,16 @@ let UserResolver = class UserResolver {
             };
         });
     }
+    changeImage({ req }, image) {
+        const auth = req.headers["authorization"];
+        if (!auth)
+            return false;
+        const token = auth.split(" ")[1];
+        const payload = jsonwebtoken_1.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const { userId } = payload.userId;
+        User_1.User.update({ id: userId }, { image });
+        return image;
+    }
     logout({ res }) {
         sendRefreshToken_1.sendRefreshToken(res, "");
         return true;
@@ -153,6 +163,13 @@ __decorate([
     __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
+__decorate([
+    type_graphql_1.Mutation(() => String),
+    __param(0, type_graphql_1.Ctx()), __param(1, type_graphql_1.Arg("image")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], UserResolver.prototype, "changeImage", null);
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     __param(0, type_graphql_1.Ctx()),

@@ -54,6 +54,7 @@ __decorate([
     __metadata("design:type", Array)
 ], User.prototype, "messages", void 0);
 __decorate([
+    typeorm_1.JoinTable(),
     type_graphql_1.Field(() => [Channel_1.Channel], { nullable: true }),
     typeorm_1.ManyToMany(() => Channel_1.Channel, (channel) => channel.users),
     __metadata("design:type", Array)
