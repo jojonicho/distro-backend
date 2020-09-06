@@ -47,7 +47,7 @@ export class ChannelResolver {
     return true;
   }
 
-  @Query(() => [Channel])
+  @Query(() => [Channel], { nullable: true })
   async channels(@Ctx() { req }: MyContext) {
     const auth = req.headers["authorization"];
     if (!auth) return false;
